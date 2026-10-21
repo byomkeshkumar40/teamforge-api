@@ -1,0 +1,15 @@
+# Never bake secrets or local state into an image
+.env
+.env.*
+!.env.example
+.git
+.venv
+__pycache__
+*.pyc
+.pytest_cache
+.ruff_cache
+tests
+docs
+*.md
+docker-compose.yml
+.github

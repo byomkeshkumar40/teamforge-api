@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: teamforge
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: teamforge
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U teamforge -d teamforge"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      # CI-only values for a throwaway service container; no real secrets are used.
+      POSTGRES_USER: teamforge
+      POSTGRES_PASSWORD: ci-only-password
+      POSTGRES_DB: teamforge
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: "5432"
+      JWT_SECRET_KEY: ci-only-secret-key-0123456789-abcdefghijklmnop
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Install Python and dependencies
+        run: |
+          uv python install
+          uv sync --frozen
+      - name: Lint
+        run: uv run ruff check .
+      - name: Format check
+        run: uv run ruff format --check .
+      - name: Apply migrations to a fresh database and check for model drift
+        run: |
+          uv run alembic upgrade head
+          uv run alembic check
+      - name: Tests (real PostgreSQL)
+        run: uv run pytest
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -t teamforge-api:ci .
+      - name: Smoke test the full stack
+        run: |
+          cat > .env <<ENV
+          APP_ENV=development
+          POSTGRES_USER=teamforge
+          POSTGRES_PASSWORD=$(openssl rand -hex 16)
+          POSTGRES_DB=teamforge
+          JWT_SECRET_KEY=$(openssl rand -hex 32)
+          ENV
+          docker compose up -d --build --wait
+          curl --fail --silent http://127.0.0.1:8000/health
+          curl --fail --silent http://127.0.0.1:8000/health/ready
+          docker compose down -v
