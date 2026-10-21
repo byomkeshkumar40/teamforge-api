@@ -50,3 +50,13 @@ def make_org_with_roles(client: TestClient, make_user) -> dict:
     join_org(client, org["id"], owner, admin, "ADMIN")
     join_org(client, org["id"], owner, member, "MEMBER")
     return {"org": org, "owner": owner, "admin": admin, "member": member}
+
+
+def create_project(client: TestClient, org_id: str, user: User, name: str = "Website", **extra):
+    response = client.post(
+        f"{API}/organizations/{org_id}/projects",
+        json={"name": name, **extra},
+        headers=auth_headers(user),
+    )
+    assert response.status_code == 201, response.text
+    return response.json()

@@ -58,6 +58,14 @@ class NotFoundError(AppError):
     default_message = "Resource not found"
 
 
+class UnprocessableError(AppError):
+    """The request is well-formed but violates a business rule (e.g. invalid assignee)."""
+
+    status_code = 422
+    code = "unprocessable"
+    default_message = "The request could not be processed"
+
+
 class ConflictError(AppError):
     status_code = 409
     code = "conflict"

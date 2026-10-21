@@ -5,7 +5,7 @@ from collections.abc import Awaitable, Callable
 
 from fastapi import APIRouter, FastAPI, Request, Response
 
-from app.api.routers import auth, health, organizations
+from app.api.routers import auth, health, organizations, projects
 from app.core.config import get_settings
 from app.core.errors import register_exception_handlers
 from app.core.logging import configure_logging
@@ -51,6 +51,7 @@ def create_app() -> FastAPI:
     api_v1 = APIRouter(prefix="/api/v1")
     api_v1.include_router(auth.router)
     api_v1.include_router(organizations.router)
+    api_v1.include_router(projects.router)
     app.include_router(api_v1)
     return app
 
