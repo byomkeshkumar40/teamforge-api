@@ -160,6 +160,6 @@ real concurrent requests."
 11. How would you scale this to many instances? (stateless app; connection pools; PgBouncer; read replicas)
 12. What would you add next? (rate limiting, refresh tokens, email, audit log, RLS)
 
-**Be honest about limits.** It isn't deployed, it hasn't been load-tested, there's no rate limiting or
-email, and the CI workflow hadn't run on GitHub when this was written. Saying so confidently reads as
+**Be honest about limits.** It isn't deployed, it hasn't been load-tested, and there's no rate limiting or
+email. Saying so confidently reads as
 maturity, not weakness.

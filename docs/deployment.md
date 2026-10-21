@@ -8,7 +8,7 @@ been exercised on a cloud provider. Treat this as a checklist, not a verified ru
 - `Dockerfile`: multi-stage, locked production dependencies, non-root user (uid 10001), HTTP healthcheck.
 - `docker-compose.yml`: `db` (Postgres 17) -> `migrate` (one-shot `alembic upgrade head`) -> `api`.
 - `.github/workflows/ci.yml`: lint, format check, migrations + drift check, tests on Postgres 17, image build
-  and Compose smoke test. (Written but not yet run on GitHub.)
+  and Compose smoke test. (Passed on GitHub Actions for commit `d049925`; see the README's CI section.)
 
 ## Environment variables
 

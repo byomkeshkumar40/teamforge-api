@@ -1,13 +1,22 @@
 # TeamForge API
 
+[![CI](https://github.com/byomkeshkumar40/teamforge-api/actions/workflows/ci.yml/badge.svg)](https://github.com/byomkeshkumar40/teamforge-api/actions/workflows/ci.yml)
+![Python 3.12](https://img.shields.io/badge/python-3.12-blue)
+![FastAPI](https://img.shields.io/badge/FastAPI-PostgreSQL-009688)
+
 A multi-tenant project-management backend (think a small Jira/Linear core) built with
 **FastAPI, PostgreSQL, SQLAlchemy 2 and Alembic**. Users register, create organizations, invite
 teammates, and manage projects and tasks, with strict isolation between organizations.
 
-> Portfolio project. It is tested and containerised, but it has **not been deployed or load-tested**.
-> See [Known limitations](#known-limitations) for an honest list of what is and isn't covered.
+**What it demonstrates:** secure multi-tenant data isolation (enforced in the API *and* in database
+constraints), role-based access control, concurrency-safe business rules, JWT authentication,
+migrations, and an integration test suite that runs against a real PostgreSQL.
 
-## Features
+> **Status:** built and tested by one developer as a learning/portfolio project. It runs locally and in
+> Docker, and CI runs on GitHub. It is **not deployed** anywhere and has **not been load-tested**.
+> Features that are not built are listed under [Future work](#future-work-not-implemented).
+
+## Implemented features
 
 - **Authentication**: registration, login, short-lived JWT access tokens, Argon2id password hashing
 - **Multi-tenancy**: shared schema with an `organization_id` column; users may belong to many organizations
@@ -47,7 +56,7 @@ More detail: [docs/architecture.md](docs/architecture.md) · [docs/database.md](
 Prerequisites: Python 3.12+, [uv](https://docs.astral.sh/uv/), Docker.
 
 ```bash
-git clone <your-repo-url> teamforge-api && cd teamforge-api
+git clone https://github.com/byomkeshkumar40/teamforge-api.git && cd teamforge-api
 cp .env.example .env
 ```
 
@@ -129,6 +138,21 @@ uv run ruff check . && uv run ruff format --check .
 | Concurrency (real parallel requests) | `tests/test_concurrency.py` |
 | Hostile input, hardening, indexes | `tests/test_security.py` |
 
+## CI and test status
+
+GitHub Actions (`.github/workflows/ci.yml`) runs on every push to `main` and on pull requests. The badge at
+the top shows the current state of the latest run.
+
+Verified on the first push (commit `d049925`, GitHub Actions run `39557198792`, 2026-10-21):
+
+| Job | What it does | Result |
+|---|---|---|
+| `test` | Ruff lint, Ruff format check, apply Alembic migrations to a fresh PostgreSQL 17 and check for model drift, then run pytest | **356 tests passed**, 0 failed |
+| `docker` | Build the image, start the full Compose stack (db, migrations, API), probe `/health` and `/health/ready` | passed |
+
+The same 356 tests also pass locally and from a fresh `git clone` installed from `uv.lock`. This
+shows the tests pass; it is not a measure of coverage or performance. No coverage percentage is reported.
+
 ## Security design (summary)
 
 Full discussion in [docs/security.md](docs/security.md).
@@ -151,15 +175,14 @@ Deliberately out of scope or not done; please do not read this project as produc
 - **No audit-log table**; structured log lines record membership/ownership changes by id.
 - **Registration reveals whether an email exists** (409). A common usability tradeoff; login does not.
 - **Offset pagination** is simple but gets slower on very deep pages.
-- **Single instance assumptions are fine, but untested at scale.** No load testing was done; there are no performance claims.
-- **GitHub Actions workflow is written but has not been executed on GitHub yet.**
-- **Not deployed anywhere.** [docs/deployment.md](docs/deployment.md) describes what a deployment needs.
+- **No load or performance testing.** Nothing here makes performance or scalability claims.
+- **Not deployed.** The Docker image and Compose stack run locally and in CI; [docs/deployment.md](docs/deployment.md) is an untested checklist for a real deployment.
 
-## Future improvements
+## Future work (not implemented)
 
-Refresh tokens and revocation, email delivery for invitations, password reset, rate limiting,
-keyset pagination, audit log, Postgres row-level security as defense in depth, task comments and
-activity history, OpenTelemetry tracing.
+None of the following exists yet: refresh tokens and revocation, email delivery for invitations,
+password reset, rate limiting, keyset pagination, an audit log, Postgres row-level security as
+defense in depth, task comments and activity history, OpenTelemetry tracing.
 
 ## Project layout
 
