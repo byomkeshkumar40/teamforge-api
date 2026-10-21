@@ -21,6 +21,9 @@ def create_app() -> FastAPI:
         title=settings.app_name,
         version="1.0.0",
         description="Multi-tenant project management backend.",
+        docs_url="/docs" if settings.enable_api_docs else None,
+        redoc_url="/redoc" if settings.enable_api_docs else None,
+        openapi_url="/openapi.json" if settings.enable_api_docs else None,
     )
     register_exception_handlers(app)
 
@@ -33,6 +36,9 @@ def create_app() -> FastAPI:
         started = time.perf_counter()
         response = await call_next(request)
         response.headers["X-Request-ID"] = request_id
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Cache-Control"] = "no-store"  # responses are per-user; never cache
         route = request.scope.get("route")
         request_logger.info(
             "request",

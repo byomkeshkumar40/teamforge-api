@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Query, status
 
 from app.api.deps import DbSession, Pagination, Tenant
-from app.schemas.common import Page
+from app.schemas.common import NO_NUL, Page
 from app.schemas.project import ProjectCreate, ProjectRead, ProjectUpdate
 from app.services import projects as service
 from app.services.projects import ProjectSortField
@@ -24,7 +24,7 @@ def list_projects(
     db: DbSession,
     page: Pagination,
     include_archived: bool = False,
-    q: Annotated[str | None, Query(min_length=1, max_length=100)] = None,
+    q: Annotated[str | None, Query(min_length=1, max_length=100, pattern=NO_NUL)] = None,
     sort_by: ProjectSortField = ProjectSortField.created_at,
     order: SortOrder = SortOrder.desc,
 ):

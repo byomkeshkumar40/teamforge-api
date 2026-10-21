@@ -11,10 +11,10 @@ from concurrent.futures import ThreadPoolExecutor
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 
 from app.main import create_app
-from app.models import Membership, Role
+from app.models import Membership, Role, User
 from tests.helpers import API, auth_headers, create_org, join_org
 
 ROUNDS = 12
@@ -118,3 +118,21 @@ def test_same_invitation_accepted_twice_at_once_creates_one_membership(client, m
     assert statuses == [200, 400]
     memberships = db.scalars(select(Membership).where(Membership.user_id == invitee.id)).all()
     assert len(memberships) == 1
+
+
+def test_simultaneous_registration_with_same_email_creates_one_account(db):
+    def register(c):
+        return c.post(
+            f"{API}/auth/register",
+            json={"email": "twin@example.com", "password": "Correct-Horse-9", "full_name": "Twin"},
+        )
+
+    for _ in range(5):
+        statuses = sorted(race([register, register]))
+        assert statuses == [201, 409]
+        count = db.scalar(
+            select(func.count()).select_from(User).where(User.email == "twin@example.com")
+        )
+        assert count == 1
+        db.execute(text("DELETE FROM users"))
+        db.commit()

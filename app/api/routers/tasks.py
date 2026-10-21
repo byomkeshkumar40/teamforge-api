@@ -6,7 +6,7 @@ from fastapi import APIRouter, Query, Response, status
 
 from app.api.deps import DbSession, Pagination, Tenant
 from app.models import TaskPriority, TaskStatus
-from app.schemas.common import Page
+from app.schemas.common import NO_NUL, Page
 from app.schemas.task import TaskAssign, TaskCreate, TaskRead, TaskUpdate
 from app.services import tasks as service
 from app.services.query import SortOrder
@@ -32,7 +32,7 @@ def list_tasks(
     unassigned: bool = False,
     due_after: date | None = None,
     due_before: date | None = None,
-    q: Annotated[str | None, Query(min_length=1, max_length=100)] = None,
+    q: Annotated[str | None, Query(min_length=1, max_length=100, pattern=NO_NUL)] = None,
     sort_by: TaskSortField = TaskSortField.created_at,
     order: SortOrder = SortOrder.desc,
 ):

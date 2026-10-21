@@ -4,8 +4,12 @@ from typing import Annotated
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, EmailStr, Field, StringConstraints
 
+from app.schemas.common import NO_NUL
+
 LowerEmail = Annotated[EmailStr, AfterValidator(str.lower)]
-FullName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=120)]
+FullName = Annotated[
+    str, StringConstraints(strip_whitespace=True, min_length=1, max_length=120, pattern=NO_NUL)
+]
 
 
 class UserCreate(BaseModel):

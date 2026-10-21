@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     app_name: str = "TeamForge API"
     app_env: Literal["development", "test", "production"] = "development"
     log_level: str = "INFO"
+    # Swagger UI / ReDoc / openapi.json. Consider turning off for public deployments.
+    enable_api_docs: bool = True
 
     postgres_user: str = "teamforge"
     postgres_password: SecretStr

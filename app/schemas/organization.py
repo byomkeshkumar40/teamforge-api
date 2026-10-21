@@ -6,9 +6,12 @@ from pydantic import BaseModel, ConfigDict, field_validator
 from pydantic.types import StringConstraints
 
 from app.models import Role
+from app.schemas.common import NO_NUL
 from app.schemas.user import LowerEmail
 
-OrgName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)]
+OrgName = Annotated[
+    str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100, pattern=NO_NUL)
+]
 
 
 class OrganizationCreate(BaseModel):

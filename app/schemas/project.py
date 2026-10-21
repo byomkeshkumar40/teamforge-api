@@ -4,8 +4,12 @@ from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_validator
 
-ProjectName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)]
-Description = Annotated[str, Field(max_length=5000)]
+from app.schemas.common import NO_NUL
+
+ProjectName = Annotated[
+    str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100, pattern=NO_NUL)
+]
+Description = Annotated[str, Field(max_length=5000, pattern=NO_NUL)]
 
 
 class ProjectCreate(BaseModel):

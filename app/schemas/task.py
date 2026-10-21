@@ -5,9 +5,12 @@ from typing import Annotated
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_validator
 
 from app.models import TaskPriority, TaskStatus
+from app.schemas.common import NO_NUL
 
-TaskTitle = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)]
-TaskDescription = Annotated[str, Field(max_length=10000)]
+TaskTitle = Annotated[
+    str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200, pattern=NO_NUL)
+]
+TaskDescription = Annotated[str, Field(max_length=10000, pattern=NO_NUL)]
 
 
 class TaskCreate(BaseModel):
