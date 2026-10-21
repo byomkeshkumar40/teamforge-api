@@ -60,3 +60,15 @@ def create_project(client: TestClient, org_id: str, user: User, name: str = "Web
     )
     assert response.status_code == 201, response.text
     return response.json()
+
+
+def create_task(
+    client: TestClient, org_id: str, user: User, project_id: str, title="Task", **extra
+):
+    response = client.post(
+        f"{API}/organizations/{org_id}/tasks",
+        json={"project_id": project_id, "title": title, **extra},
+        headers=auth_headers(user),
+    )
+    assert response.status_code == 201, response.text
+    return response.json()
