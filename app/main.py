@@ -3,9 +3,9 @@ import time
 import uuid
 from collections.abc import Awaitable, Callable
 
-from fastapi import FastAPI, Request, Response
+from fastapi import APIRouter, FastAPI, Request, Response
 
-from app.api.routers import health
+from app.api.routers import auth, health
 from app.core.config import get_settings
 from app.core.errors import register_exception_handlers
 from app.core.logging import configure_logging
@@ -48,6 +48,9 @@ def create_app() -> FastAPI:
         return response
 
     app.include_router(health.router)
+    api_v1 = APIRouter(prefix="/api/v1")
+    api_v1.include_router(auth.router)
+    app.include_router(api_v1)
     return app
 
 

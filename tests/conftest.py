@@ -8,7 +8,9 @@ os.environ["JWT_SECRET_KEY"] = "test-only-secret-key-not-used-anywhere-else-0123
 os.environ["EXPOSE_INVITATION_TOKENS"] = "true"
 os.environ["LOG_LEVEL"] = "WARNING"
 
+import itertools  # noqa: E402
 import re  # noqa: E402
+import uuid  # noqa: E402
 from collections.abc import Iterator  # noqa: E402
 from pathlib import Path  # noqa: E402
 
@@ -20,9 +22,12 @@ from sqlalchemy.orm import Session  # noqa: E402
 
 from alembic import command  # noqa: E402
 from app.core.config import get_settings  # noqa: E402
+from app.core.security import hash_password  # noqa: E402
 from app.db.base import Base  # noqa: E402
 from app.db.session import SessionLocal, engine  # noqa: E402
 from app.main import create_app  # noqa: E402
+from app.models import User  # noqa: E402
+from tests.helpers import TEST_PASSWORD  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -67,3 +72,28 @@ def db() -> Iterator[Session]:
 def client() -> Iterator[TestClient]:
     with TestClient(create_app()) as test_client:
         yield test_client
+
+
+@pytest.fixture(scope="session")
+def password_hash() -> str:
+    """Argon2 is deliberately slow, so hash the shared test password once per run."""
+    return hash_password(TEST_PASSWORD)
+
+
+@pytest.fixture
+def make_user(db: Session, password_hash: str):
+    """Factory for committed users; the password is always TEST_PASSWORD."""
+    counter = itertools.count(1)
+
+    def _make(email: str | None = None, *, full_name: str = "Test User", is_active: bool = True):
+        user = User(
+            email=email or f"user{next(counter)}-{uuid.uuid4().hex[:6]}@example.com",
+            password_hash=password_hash,
+            full_name=full_name,
+            is_active=is_active,
+        )
+        db.add(user)
+        db.commit()
+        return user
+
+    return _make
