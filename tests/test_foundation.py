@@ -58,3 +58,9 @@ def test_settings_forbid_token_exposure_in_production():
             app_env="production",
             expose_invitation_tokens=True,
         )
+
+
+def test_readiness_checks_database(client):
+    response = client.get("/health/ready")
+    assert response.status_code == 200
+    assert response.json() == {"status": "ready"}
